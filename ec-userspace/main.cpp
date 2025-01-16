@@ -7,17 +7,12 @@
 #include <chrono>    // For delays
 
 void writeToSerial(int serialPort, const char *data) {
-    // const char *data = "Hello, Arduino!"; // Data to send
-    // while (true) {
         ssize_t bytesWritten = write(serialPort, data, strlen(data));
         if (bytesWritten == -1) {
             std::cerr << "Error: Failed to write to serial port.\n";
-            // break;
         } else {
             std::cout << "Sent: " << data << "\n";
         }
-        // std::this_thread::sleep_for(std::chrono::seconds(2)); // Send every second
-    // }
 }
 
 void readFromSerial(int serialPort) {
@@ -48,10 +43,6 @@ void readFromSerial(int serialPort) {
                 if (!line.empty()) {
                     std::cout << "Received: " << line << "\n";
 
-                    if (line.compare("Hello, Arduino!") == 0) {
-                        std::cout << "string comparison true!!!" << "\n\n";
-                    }
-
                     if (line.compare("PC_POWER_OFF") == 0) {
                         std::cout << "Host: Turning off the computer" << "\n\n";
                         // system("poweroff");
@@ -64,7 +55,7 @@ void readFromSerial(int serialPort) {
         }
 
         // Add a short delay to avoid CPU overload
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 }
 
@@ -89,8 +80,8 @@ int main() {
         return 1;
     }
 
-    cfsetospeed(&tty, B4800);  // Set baud rate to 9600 (output speed)
-    cfsetispeed(&tty, B4800);  // Set baud rate to 9600 (input speed)
+    cfsetospeed(&tty, B4800);  // Set baud rate to 4800 (output speed)
+    cfsetispeed(&tty, B4800);  // Set baud rate to 4800 (input speed)
 
     tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8 data bits
     tty.c_iflag &= ~IGNBRK;                     // Ignore break processing
