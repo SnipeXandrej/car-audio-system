@@ -34,17 +34,17 @@ void removeSubstr (char *string, char *sub) {
 void f_pc_power(bool power) {
     if (power) {
         uart_puts("Power on...\n");
-        pc_powered_on = true;
+
         PORTB = PORTB | P0; // turns ON relay that powers the computer on pin 0
+        pc_powered_on = true;
     } else if (!power && pc_powered_on) {
         uart_puts("Power off...\n");
-        pc_powered_on = false;
         uart_puts("PC_POWER_OFF\n");
-        // timer that waits 8 seconds
-        _delay_ms(8000);
-        uart_puts("PC_POWER_OFF2\n");
-        PORTB = PORTB ^ P0; // turns OFF relay that powers the computer pin 0
-        uart_puts("PC_POWER_OFF3\n");
+
+        // wait 12 seconds to make sure the pc is actually off
+        _delay_ms(12000);
+        PORTB = PORTB ^ P0; // turns OFF relay that powers the computer on pin 0
+        pc_powered_on = false;
     }
 }
 
@@ -88,9 +88,9 @@ int main(void) {
 
   if ((PIND & P2) == 0) {
     p2_pressed = true;
-    pc_powered_on = false;
-    uart_puts("pressed\n");
   }
+
+  f_pc_power(false);
 
   // PORTB = 255;           0b11111111
   // PORTB = PORTB ^ P0;    0b01111111 // High to Low
