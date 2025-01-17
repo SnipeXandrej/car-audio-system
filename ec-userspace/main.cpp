@@ -6,6 +6,30 @@
 #include <thread>    // For multithreading (optional)
 #include <chrono>    // For delays
 
+double voltage_remote;
+
+std::string removeStringWithEqualSignAtTheEnd(const std::string toRemove, std::string str)
+{
+    size_t pos = str.find(toRemove);
+    str.erase(pos, toRemove.length() + 1);
+
+    // cout << str << "\n";
+    return str;
+}
+
+double getValueFromString(const std::string toRemove, std::string str) {
+    double value;
+
+    try {
+        value = stoi(removeStringWithEqualSignAtTheEnd(toRemove, str));
+    }
+    catch (std::invalid_argument const& ex) {
+        std::cout << "this did an oopsie: " << ex.what() << '\n';
+    }
+
+    return value;
+}
+
 void writeToSerial(int serialPort, const char *data) {
         ssize_t bytesWritten = write(serialPort, data, strlen(data));
         if (bytesWritten == -1) {
@@ -44,8 +68,13 @@ void readFromSerial(int serialPort) {
                     std::cout << "Received: " << line << "\n";
 
                     if (line.compare("PC_POWER_OFF") == 0) {
-                        std::cout << "Host: Turning off the computer" << "\n\n";
+                        std::cout << "Host: Turning off the computer" << "\n";
                         // system("poweroff");
+                    }
+
+                    if (line.rfind("VOLTAGE_REMOTE", 0) == 0) {
+                        voltage_remote = getValueFromString("VOLTAGE_REMOTE", line);
+                        std::cout << "voltage_remote: " << voltage_remote << "\n";
                     }
                 }
             }
@@ -61,6 +90,7 @@ void readFromSerial(int serialPort) {
 
 
 int main() {
+    std::cout << "Welcome!" << "\n";
     const char *portName = "/dev/ttyUSB0"; // Replace with your serial port
 
     // Open the serial port
@@ -98,10 +128,8 @@ int main() {
 
     // Start writing and reading using threads
     // std::thread writer([&]{
-    //     for (int i = 0; i < 5; i++) {
-    //         writeToSerial(serialPort, "GetVoltageRemote\n");
-    //         std::this_thread::sleep_for(std::chrono::seconds(1)); // Send every second
-    //     }
+    //         writeToSerial(serialPort, "GET_VOLTAGE_REMOTE\n");
+    //         std::this_thread::sleep_for(std::chrono::seconds(2)); // Send every second
     // });
 
     std::thread reader(readFromSerial, serialPort);

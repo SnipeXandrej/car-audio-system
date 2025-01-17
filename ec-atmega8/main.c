@@ -9,7 +9,6 @@
 #include <util/delay.h>
 #include <stdbool.h>
 #include <util/delay.h>
-// #include <unistd.h>
 
 #define P0 0b00000001
 #define P1 0b00000010
@@ -19,6 +18,9 @@
 #define P5 0b00100000
 #define P6 0b01000000
 #define P7 0b10000000
+
+bool p2_pressed;
+bool pc_powered_on;
 
 void removeSubstr (char *string, char *sub) {
     char *match;
@@ -31,12 +33,18 @@ void removeSubstr (char *string, char *sub) {
 
 void f_pc_power(bool power) {
     if (power) {
+        uart_puts("Power on...\n");
+        pc_powered_on = true;
         PORTB = PORTB | P0; // turns ON relay that powers the computer on pin 0
-    } else {
+    } else if (!power && pc_powered_on) {
+        uart_puts("Power off...\n");
+        pc_powered_on = false;
         uart_puts("PC_POWER_OFF\n");
-        // timer that waits 15 seconds
-        _delay_ms(12000);
+        // timer that waits 8 seconds
+        _delay_ms(8000);
+        uart_puts("PC_POWER_OFF2\n");
         PORTB = PORTB ^ P0; // turns OFF relay that powers the computer pin 0
+        uart_puts("PC_POWER_OFF3\n");
     }
 }
 
@@ -61,9 +69,6 @@ void ADC_Init() {
 }
 
 int main(void) {
-  //ADC
-  // ADMUX = 0b01000101;
-  // ADCSRA = 0b11101111;
   ADC_Init();
 
   char pole[32];
@@ -72,8 +77,7 @@ int main(void) {
   int cislo = 0;
   uart_init(4800);
   // lcd_init(LCD_DISP_ON);
-  // int smer = 1; // 1 = vpravo, 0 = vlavo
-  // int rychlost = 6;
+
   DDRB = 255;
   PORTB = 0;
 
@@ -82,8 +86,11 @@ int main(void) {
 
   sei(); // enables interrupts, needed for uart
 
-  bool p2_pressed = false;
-  bool pc_powerswitch = false;
+  if ((PIND & P2) == 0) {
+    p2_pressed = true;
+    pc_powered_on = false;
+    uart_puts("pressed\n");
+  }
 
   // PORTB = 255;           0b11111111
   // PORTB = PORTB ^ P0;    0b01111111 // High to Low
@@ -91,31 +98,18 @@ int main(void) {
   // PORTB = PORTB | P0;    0b11111011 // Low to High
 
   while (1) {
-      // Power Button
-      // if (((PIND & P2) == 0)) {
-      //     if (!p2_pressed) {
-      //       p2_pressed = true;
-      //       uart_puts("oof\n");
-      //       // f_power_on();
-      //     }
-      // } else {
-      //     p2_pressed = false;
-      // }
-
       // Power Switch
+      // Pin LOW -> POWER OFF
       if (((PIND & P2) == 0)) {
-          if (!p2_pressed) {
-            p2_pressed = true;
-            uart_puts("Power on...\n");
-            f_pc_power(true);
-          }
-      } else {
           if (p2_pressed) {
             p2_pressed = false;
-            uart_puts("Power off...\n");
             f_pc_power(false);
           }
+      } else if (!p2_pressed) {
+            p2_pressed = true;
+            f_pc_power(true);
       }
+
 
       // lcd_gotoxy(0, 0);
       // sprintf(text,"pole:%2d", pole);
@@ -133,17 +127,26 @@ int main(void) {
 
 
     if (uart_gets(pole)) {
+        if (strcmp(pole, "GET_VOLTAGE_REMOTE\n") == 0) {
+          sprintf(text, "VOLTAGE_REMOTE=%d\n", adcValues[0]);
+          uart_puts(text);
+        }
+
+        if (strcmp(pole, "PC_POWER_OFF\n") == 0) {
+          f_pc_power(false);
+        }
+
       // cislo=atoi(pole);
       // uart_puts("ruchlust");
       // blik(cislo);
 
-        sprintf(text,"pole:%2d", pole);
-        uart_puts(pole);
+        // sprintf(text,"pole:%2d", pole);
+        // uart_puts(pole);
 
 
         // lcd_gotoxy(0, 0);
         // lcd_clrscr();
-        sprintf(text,"%s", pole);
+        // sprintf(text,"%s", pole);
         // lcd_puts(text);
 
 
