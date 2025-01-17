@@ -37,6 +37,12 @@ void f_pc_power(bool power) {
 
         PORTB = PORTB | P0; // turns ON relay that powers the computer on pin 0
         pc_powered_on = true;
+
+        // small delay, just in case if the remote wire
+        // was touched against each other multiple
+        // times before it made a proper contact, so the
+        // power off sequence doesn't get inappropriately called
+        _delay_ms(1000);
     } else if (!power && pc_powered_on) {
         uart_puts("Power off...\n");
         uart_puts("PC_POWER_OFF\n");
@@ -104,11 +110,13 @@ int main(void) {
       if (((PIND & P2) == 0)) {
           if (p2_pressed) {
             p2_pressed = false;
-            f_pc_power(false);
-          }
-      } else if (!p2_pressed) {
-            p2_pressed = true;
             f_pc_power(true);
+          }
+      } else {
+        if (!p2_pressed) {
+            p2_pressed = true;
+            f_pc_power(false);
+        }
       }
 
 
