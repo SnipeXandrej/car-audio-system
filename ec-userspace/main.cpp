@@ -7,6 +7,7 @@
 #include <chrono>    // For delays
 
 double voltage_remote;
+bool succesful_communication = false;
 
 std::string removeStringWithEqualSignAtTheEnd(const std::string toRemove, std::string str)
 {
@@ -65,16 +66,24 @@ void readFromSerial(int serialPort) {
 
                 // Print the processed line
                 if (!line.empty()) {
-                    std::cout << "Received: " << line << "\n";
-
-                    if (line.compare("PC_POWER_OFF") == 0) {
-                        std::cout << "Host: Turning off the computer" << "\n";
-                        // system("poweroff");
+                    if (line.compare("YES_I_AM_ALIVE") == 0) {
+                        std::cout << "Succesful communication with Atmega8!" << "\n";
+                        succesful_communication = true;
                     }
 
-                    if (line.rfind("VOLTAGE_REMOTE", 0) == 0) {
-                        voltage_remote = getValueFromString("VOLTAGE_REMOTE", line);
-                        std::cout << "voltage_remote: " << voltage_remote << "\n";
+                    if (succesful_communication) {
+                        // prints everything received
+                        std::cout << "Received: " << line << "\n";
+
+                        if (line.compare("PC_POWER_OFF") == 0) {
+                            std::cout << "Host: Turning off the computer" << "\n";
+                            system("sudo poweroff");
+                        }
+
+                        if (line.rfind("VOLTAGE_REMOTE", 0) == 0) {
+                            voltage_remote = getValueFromString("VOLTAGE_REMOTE", line);
+                            std::cout << "voltage_remote: " << voltage_remote << "\n";
+                        }
                     }
                 }
             }
@@ -95,9 +104,11 @@ int main() {
 
     // Open the serial port
     int serialPort = open(portName, O_RDWR | O_NOCTTY | O_SYNC);
-    if (serialPort == -1) {
-        std::cerr << "Error: Unable to open port " << portName << "\n";
-        return 1;
+    while (serialPort == -1) {
+        std::cerr << "Error: Unable to open port, retrying " << portName << "\n";
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        serialPort = open(portName, O_RDWR | O_NOCTTY | O_SYNC);
     }
 
     // Configure the serial port
@@ -134,9 +145,21 @@ int main() {
 
     std::thread reader(readFromSerial, serialPort);
 
+    std::thread everythingElseThread([&]{
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        while (!succesful_communication) {
+            writeToSerial(serialPort, "ARE_YOU_ALIVE\n");
+
+            // hol'up
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    });
+
     // Join threads to main thread
     // writer.join();
     reader.join();
+    everythingElseThread.join();
+
 
     // Close the serial port
     close(serialPort);

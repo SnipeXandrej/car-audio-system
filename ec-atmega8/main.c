@@ -41,10 +41,11 @@ void f_pc_power(bool power) {
         uart_puts("Power off...\n");
         uart_puts("PC_POWER_OFF\n");
 
-        // wait 12 seconds to make sure the pc is actually off
-        _delay_ms(12000);
+        // wait 7 seconds to make sure the pc is actually off, and 8 seconds so the ATX PSU fully discharges
+        _delay_ms(7000);
         PORTB = PORTB ^ P0; // turns OFF relay that powers the computer on pin 0
         pc_powered_on = false;
+        _delay_ms(8000);
     }
 }
 
@@ -117,7 +118,7 @@ int main(void) {
       // lcd_puts("testt");
 
         // uart_puts("ACHTUNG!");
-        // delay(500000);
+        // _delay_ms(250);
         // sprintf(text, "%d\n", adcValues[0]);
         // uart_puts(text);
 
@@ -127,6 +128,11 @@ int main(void) {
 
 
     if (uart_gets(pole)) {
+        if (strcmp(pole, "ARE_YOU_ALIVE\n") == 0) {
+          sprintf(text, "YES_I_AM_ALIVE\n");
+          uart_puts(text);
+        }
+
         if (strcmp(pole, "GET_VOLTAGE_REMOTE\n") == 0) {
           sprintf(text, "VOLTAGE_REMOTE=%d\n", adcValues[0]);
           uart_puts(text);
@@ -187,6 +193,7 @@ int main(void) {
                 case 8: PORTB = 0b11111111; break;
             }
         }
+        uart_flush();
     }
   }
 }
