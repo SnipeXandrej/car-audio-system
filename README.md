@@ -14,3 +14,9 @@ This is my attempt at putting a computer in my beloved car. For now it will be p
 - Audio Server: [PipeWire](https://pipewire.org/)
 - Audio Plugins: [LSP](https://lsp-plug.in/)
 - Audio Plugin Host: [Carla](https://kx.studio/Applications:Carla)
+
+### ec-userspace / ec-atmega8
+These folders contain code that allows communication between linux and the Atmega8 based ""EC"" through Serial
+
+- EC as in ""Embedded Controller""
+- Primary purpose of this EC is to control the power coming into the whole PC, and acts as a protection, so the computer can't drain the battery if it for some reason won't turn off...
