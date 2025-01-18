@@ -20,3 +20,6 @@ These folders contain code that allows communication between linux and the Atmeg
 
 - EC as in ""Embedded Controller""
 - Primary purpose of this EC is to control the power coming into the whole PC, and acts as a protection, so the computer can't drain the battery if it for some reason won't turn off...
+
+### linux
+This directory contains things like workarounds, custom packages, config files, etc. used in linux (excluding `ec-userspace`)
