@@ -7,6 +7,7 @@ This is my attempt at putting a computer in my beloved car. For now it will be p
 - GPU: Integrated Intel HD Graphics 2500
 - RAM: 1x4GB
 - Sound Card: Creative Sound Blaster Audigy RX
+- Bluetooth: USB Adapter ORICO BTA-508 with Bluetooth 5.0
 
 ### Software:
 - Operating System: [Arch Linux](https://archlinux.org/)
