@@ -1,6 +1,43 @@
 # Hi, welcome!
 This is my attempt at putting a computer in my beloved car. For now it will be primarily used for EQing all of my speakers, but later I plan to replace the current android radio in the car with a touchscreen display that will be connected to the computer, and that will be controlled with a custom UI (probably made in Qt).
 
+### Things I would like to add/implement:
+- [ ] Battery voltage monitoring
+- [ ] Schematics of the whole ordeal
+- [ ] Custom UI
+  - - [ ] Show current song that's being played either through Bluetooth or through the computer itself
+  - - [ ] Bluetooth: play/pause, next, previous buttons
+- [ ] Remove included Android Radio and replace it with a touchscreen connected to the computer itself
+- [ ] Physical Buttons for volume up/down, play next/previous song, etc.
+- [ ] AUX Input
+
+### Things already implemented:
+- [x] Communication between "EC" and the OS
+
+# Commands and their actions between EC and Userspace
+
+### EC
+| Received message/(Action)     | Output message/(Action)                 |
+|-------------------------------|-----------------------------------------|
+| ARE_YOU_ALIVE                 | YES_I_AM_ALIVE                          |
+| GET_VOLTAGE_REMOTE            | VOLTAGE_REMOTE=%d                       |
+| PC_POWER_OFF                  | PC_POWER_OFF (Powers the computer off)  |
+
+### Userspace
+| Received message/(Action)   | Output message/(Action)                                       |
+|-----------------------------|---------------------------------------------------------------|
+| YES_I_AM_ALIVE              | (Allows for all other commands than this command to function) |
+| PC_POWER_OFF                | (Powers the computer off)                                     |
+
+### To be implemented:
+#### EC
+| Received message/(Action) | Output message/(Action)                     |
+|---------------------------|---------------------------------------------|
+| AMPx_POWER_ON             | AMPx_POWERED_ON (Powers on amplifier n.x)   |
+| AMPx_POWER_OFF            | AMPx_POWERED_OFF (Powers off amplifier n.x) |
+| GET_VOLTAGE_BATTERY       | VOLTAGE_BATTERY=%f                          |
+
+# Hardware and software and stuff...
 ### PC Specs:
 - Motherboard: Gigabyte Z68AP-D3
 - CPU: Intel Core i3-3240
